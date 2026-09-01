@@ -579,6 +579,10 @@ BuildTestConfig(const QList<std::shared_ptr<ProxyEntity>> &profiles) {
       MW_show_log("Skipping ExtraCore conf");
       continue;
     }
+    // hydra is udp-only and its socks bridge runs only while the profile is
+    // started: a standalone tcp url test would die on the bridge. measure
+    // tcp direct instead — it proves the config and keeps the list usable.
+    bool isHydra = item->type == "hydra";
     if (!IsValid(item)) {
       MW_show_log("Skipping invalid config: " + item->name);
       item->latencyInt = -1;
@@ -588,6 +592,12 @@ BuildTestConfig(const QList<std::shared_ptr<ProxyEntity>> &profiles) {
     if (!res->error.isEmpty()) {
       results->error = res->error;
       return results;
+    }
+    if (isHydra) {
+      // latency of the tunnel exit as seen over tcp; the real path is udp
+      results->outboundTags << "direct";
+      results->tag2entID.insert("direct", item->id);
+      continue;
     }
     if (bean != nullptr && item->type == "custom" &&
         item->CustomBean()->core == "internal-full") {
