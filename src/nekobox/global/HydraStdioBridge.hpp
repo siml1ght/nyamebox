@@ -7,6 +7,7 @@
 #include <QUdpSocket>
 #include <QHash>
 #include <QHostAddress>
+#include <memory>
 
 namespace Configs {
     class ProxyEntity;
