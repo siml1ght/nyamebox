@@ -144,6 +144,8 @@ namespace Configs
             bean = new Configs::JuicityBean(ent);
         cast(snell)
             bean = new Configs::SnellBean(ent);
+        cast(hydra)
+            bean = new Configs::HydraBean(ent);
         } else {
             unknown_type:
             bean = new Configs::AbstractBean(ent, -114514);
@@ -265,5 +267,6 @@ qDebug() << "Type Unknown" << make_strong_bean;
         cast_func(TrustTunnel)
         cast_func(Juicity)
         cast_func(Snell)
+        cast_func(Hydra)
 
 }

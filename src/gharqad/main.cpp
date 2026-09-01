@@ -229,6 +229,7 @@ static void loadTranslate(QString locale) {
       {"trusttunnel", "TrustTunnel"},
       {"juicity", "Juicity"},
       {"snell", "Snell"},
+      {"hydra", "Hydra-Tunnel"},
       {"custom", QObject::tr("Custom")},
       {"extracore", QObject::tr("Extra Core")},
   };

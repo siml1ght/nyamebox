@@ -25,3 +25,4 @@
 #include "TrustTunnelBean.hpp"
 #include "JuicityBean.hpp"
 #include "SnellBean.hpp"
+#include "HydraBean.hpp"

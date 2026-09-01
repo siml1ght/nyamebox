@@ -52,6 +52,8 @@ class NaiveBean;
 
 class SnellBean;
 
+class HydraBean;
+
 }; // namespace Configs
 
 namespace Configs {
@@ -139,7 +141,7 @@ public:
           cast_func(Wireguard) cast_func(Tailscale) cast_func(SSH)
               cast_func(Tor) cast_func(Custom) cast_func(ExtraCore)
                   cast_func(Naive) cast_func(TrustTunnel) cast_func(Juicity)
-                    cast_func(Snell)
+                    cast_func(Snell) cast_func(Hydra)
 
 #undef cast_func
 };

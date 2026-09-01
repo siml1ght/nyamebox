@@ -27,6 +27,7 @@
 #define CHECK_ACTION_ACCESS
 #else
 #include <nekobox/ui/security_addon.h>
+#include <nekobox/global/HydraStdioBridge.hpp>
 #endif
 
 
@@ -751,8 +752,21 @@ void MainWindow::profile_start(int _id, bool do_not_test) {
         delete mutex;
         // do start
         MW_show_log(">>>>>>>> " + tr("Starting profile %1").arg(ent->DisplayTypeAndName()));
+        if (ent->type == "hydra") {
+            if (!HydraStdioBridge::instance()->start(ent)) {
+                MW_show_log("<<<<<<<< " + tr("Failed to start Hydra core"));
+                this->ui->start_stop_button->setState(Icon::State::IDLE);
+                mu_starting.unlock();
+                return;
+            }
+        } else {
+            HydraStdioBridge::instance()->stop();
+        }
         this->ui->start_stop_button->setState(Icon::State::CONNECTING);
         if (!profile_start_stage2()) {
+            if (ent->type == "hydra") {
+                HydraStdioBridge::instance()->stop();
+            }
             MW_show_log("<<<<<<<< " + tr("Failed to start profile %1").arg(ent->DisplayTypeAndName()));
             this->ui->start_stop_button->setState(Icon::State::IDLE);
         }
@@ -877,6 +891,7 @@ void MainWindow::profile_stop(bool crash, bool block, bool manual) {
     runOnNewThread([=, this, &blocker] {
         // do stop
         MW_show_log(">>>>>>>> " + tr("Stopping profile %1").arg(running->DisplayTypeAndName()));
+        HydraStdioBridge::instance()->stop();
         this->ui->start_stop_button->setState(Icon::State::DISCONNECTING);
         if (!profile_stop_stage2()) {
             MW_show_log("<<<<<<<< " + tr("Failed to stop, please restart the program."));
