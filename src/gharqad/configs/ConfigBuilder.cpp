@@ -1,4 +1,4 @@
-
+﻿
 
 #include <nekobox/dataStore/RouteEntity.h>
 #include <nekobox/dataStore/Utils.hpp>
@@ -14,6 +14,7 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFile>
+#include <QCoreApplication>
 #include <QFileInfo>
 #include <QStandardPaths>
 
@@ -1520,6 +1521,27 @@ skip_multiple_jobs:
 
     auto routeRules = routeChain->get_route_rules(false, false, outboundMap);
 
+    // hydra: the stdio core is udp-only, and its own transport must never
+    // re-enter the tun (infinite loop) вЂ” pin it to direct, and keep tcp off
+    // the udp-only socks bridge. these must precede the routing chain rules.
+    if (status->ent != nullptr && status->ent->type == "hydra") {
+#ifdef Q_OS_WIN
+      QString core = QCoreApplication::applicationDirPath() + "/hydra-client.exe";
+#else
+      QString core = QCoreApplication::applicationDirPath() + "/hydra-client";
+#endif
+      QJsonArray hydraRules;
+      hydraRules += QJsonObject{{"outbound", "direct"},
+                                {"process_path", QJsonArray{core}}};
+      hydraRules += QJsonObject{{"outbound", "direct"}, {"network", "tcp"}};
+      QJsonArray combined;
+      for (const auto &r : hydraRules)
+        combined += r;
+      for (const auto &r : routeRules)
+        combined += r;
+      routeRules = combined;
+    }
+
     // tun process routing
     if (dataStore->spmode_vpn && !status->forTest) {
       auto split = dataStore->routing->tun_split;
@@ -1812,3 +1834,4 @@ QString get_jsdelivr_link(QString link) {
   return link;
 }
 } // namespace Configs
+

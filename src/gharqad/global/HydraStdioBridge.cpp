@@ -229,13 +229,36 @@ void HydraStdioBridge::onControlReadyRead() {
         buf.remove(0, 2 + nMethods);
     }
 
-    if (buf.size() >= 10 && (unsigned char) buf[0] == 0x05 && (unsigned char) buf[1] == 0x03) {
-        if ((unsigned char) buf[3] != 0x01) {
-            sock->disconnectFromHost();
-            return;
+    if (buf.size() >= 3 && (unsigned char) buf[0] == 0x05) {
+        unsigned char cmd = (unsigned char) buf[1];
+        if (cmd == 0x03) {
+            // udp associate: the only thing a udp-only bridge can offer
+            if (buf.size() < 10 || (unsigned char) buf[3] != 0x01) {
+                // rfc: reply with general failure; addr type we cannot parse
+                QByteArray r;
+                r.append((char) 0x05);
+                r.append((char) 0x07);
+                sock->write(r);
+            } else {
+                sock->write(hySocks5AssociateResponse(relayPort));
+                buf.remove(0, 10);
+            }
+        } else {
+            // tcp connect/bind: the tunnel is udp-only, fail fast instead of
+            // letting the request hang until timeout
+            QByteArray r;
+            r.append((char) 0x05);
+            r.append((char) 0x07); // command not supported
+            r.append((char) 0x00);
+            r.append((char) 0x01);
+            r.append((char) 0);
+            r.append((char) 0);
+            r.append((char) 0);
+            r.append((char) 0);
+            r.append((char) 0);
+            r.append((char) 0);
+            sock->write(r);
         }
-        sock->write(hySocks5AssociateResponse(relayPort));
-        buf.remove(0, 10);
     }
     controlBuffers[sock] = buf;
 }
