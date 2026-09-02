@@ -53,6 +53,8 @@ namespace Configs {
         // xxList is V2Ray format string list
 
         QStringList domainListDNSDirect;
+        // server ips that must never enter the tun adapter (hydra loop guard)
+        QStringList tunServerExcludes;
 
         // config format
 
